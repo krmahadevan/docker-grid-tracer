@@ -34,9 +34,12 @@ if [ ! -z "$SE_SESSIONS_PORT" ]; then
   PORT_CONFIG="--port ${SE_SESSIONS_PORT}"
 fi
 
+curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > /tmp/cs
+chmod +x /tmp/cs
+
 java ${JAVA_OPTS:-$SE_JAVA_OPTS} -Dwebdriver.http.factory=jdk-http-client \
   -jar /opt/selenium/selenium-server.jar \
-  --ext /opt/selenium/selenium-http-jdk-client.jar sessions \
+  --ext /opt/selenium/selenium-http-jdk-client.jar:$(/tmp/cs fetch --classpath --cache /tmp io.opentelemetry:opentelemetry-exporter-jaeger:1.19.0 io.grpc:grpc-netty:1.50.2)  sessions \
   --publish-events tcp://"${SE_EVENT_BUS_HOST}":${SE_EVENT_BUS_PUBLISH_PORT} \
   --subscribe-events tcp://"${SE_EVENT_BUS_HOST}":${SE_EVENT_BUS_SUBSCRIBE_PORT} \
   --bind-host ${SE_BIND_HOST} \
